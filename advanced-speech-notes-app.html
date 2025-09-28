@@ -647,6 +647,7 @@
             constructor() {
                 this.recognition = null;
                 this.isRecording = false;
+                this.lastInterimText = ''; // متغير لتتبع النص المؤقت
                 this.startTime = null;
                 this.timerInterval = null;
                 this.savedNotes = JSON.parse(localStorage.getItem('speechNotes') || '[]');
@@ -748,6 +749,7 @@
                         let finalTranscript = '';
                         let interimTranscript = '';
                         
+                        // تجميع النص النهائي والمؤقت من النتائج الجديدة فقط
                         for (let i = event.resultIndex; i < event.results.length; i++) {
                             const transcript = event.results[i][0].transcript;
                             if (event.results[i].isFinal) {
@@ -758,12 +760,28 @@
                         }
                         
                         const currentText = this.resultText.textContent;
+                        
                         if (currentText === 'النص المسجل سيظهر هنا...') {
+                            // إذا كان النص الافتراضي، استبدله بالنص الجديد
                             this.resultText.textContent = finalTranscript + interimTranscript;
                         } else {
-                            // إزالة النص المؤقت السابق وإضافة الجديد
-                            const baseText = currentText.replace(/\s*$/, ''); // إزالة المسافات الأخيرة
-                            this.resultText.textContent = baseText + finalTranscript + interimTranscript;
+                            // إزالة النص المؤقت السابق من النهاية
+                            let baseText = currentText;
+                            if (this.lastInterimText) {
+                                // إزالة النص المؤقت السابق
+                                baseText = baseText.replace(this.lastInterimText, '').replace(/\s+$/, '');
+                            }
+                            
+                            // إضافة النص النهائي والمؤقت الجديد
+                            this.resultText.textContent = baseText + (finalTranscript ? ' ' + finalTranscript : '') + interimTranscript;
+                            
+                            // حفظ النص المؤقت الحالي للمرة القادمة
+                            this.lastInterimText = interimTranscript;
+                            
+                            // إذا كان هناك نص نهائي، امسح النص المؤقت المحفوظ
+                            if (finalTranscript) {
+                                this.lastInterimText = '';
+                            }
                         }
                     };
                     
@@ -807,6 +825,7 @@
                     this.recognition.stop();
                 } else {
                     try {
+                        this.lastInterimText = ''; // إعادة تعيين النص المؤقت عند بدء تسجيل جديد
                         this.recognition.start();
                     } catch (error) {
                         console.error('خطأ في بدء التسجيل:', error);
@@ -817,6 +836,7 @@
             
             stopRecording() {
                 this.isRecording = false;
+                this.lastInterimText = ''; // إعادة تعيين النص المؤقت عند إيقاف التسجيل
                 this.updateStatus('تم إيقاف التسجيل. يمكنك البدء مرة أخرى', 'ready');
                 this.stopTimer();
                 this.recordBtn.innerHTML = '<i class="fas fa-microphone"></i>';
@@ -854,6 +874,7 @@
             
             clearText() {
                 this.resultText.textContent = 'النص المسجل سيظهر هنا...';
+                this.lastInterimText = ''; // إعادة تعيين النص المؤقت عند مسح النص
                 this.updateStatus('تم مسح النص', 'ready');
             }
             
