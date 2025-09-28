@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق الملاحظات الصوتية المتقدم</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: calc(100vh - 40px);
+        }
+
+        /* قسم التسجيل */
+        .recording-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            height: fit-content;
+        }
+        
+        .app-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .app-title {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .status.ready {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        
+        .status.recording {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .record-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .record-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .record-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+        
+        .record-btn.recording {
+            background: linear-gradient(45deg, #ff4757, #c44569);
+            animation: recordPulse 1s infinite;
+        }
+        
+        @keyframes recordPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .timer {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ee5a24;
+            display: none;
+        }
+        
+        .result-area {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            min-height: 150px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .result-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #333;
+            text-align: right;
+            min-height: 100px;
+        }
+        
+        .save-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .category-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .category-select {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+        }
+        
+        .new-category-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            display: none;
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #00cec9, #00b894);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(45deg, #fd79a8, #e84393);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(45deg, #fdcb6e, #e17055);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* قسم الملاحظات */
+        .notes-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .notes-title {
+            color: #333;
+            font-size: 1.5rem;
+        }
+        
+        .notes-stats {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .search-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            min-width: 200px;
+        }
+        
+        .filter-select {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+            min-width: 150px;
+        }
+        
+        .notes-list {
+            flex: 1;
+            overflow-y: auto;
+            max-height: calc(100vh - 300px);
+        }
+        
+        .note-item {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .note-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+        
+        .note-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 150px;
+        }
+        
+        .note-date {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .note-category {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .note-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .note-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .note-btn.edit {
+            color: #00cec9;
+        }
+        
+        .note-btn.delete {
+            color: #e17055;
+        }
+        
+        .note-btn.copy {
+            color: #74b9ff;
+        }
+        
+        .note-btn:hover {
+            background: rgba(0,0,0,0.1);
+            transform: scale(1.1);
+        }
+        
+        .note-content {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #333;
+            text-align: right;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .note-content.editing {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 15px;
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        /* تنسيقات الفئات */
+        .category-work { border-right: 4px solid #ff6b6b; }
+        .category-personal { border-right: 4px solid #4ecdc4; }
+        .category-study { border-right: 4px solid #45b7d1; }
+        .category-ideas { border-right: 4px solid #f9ca24; }
+        .category-meetings { border-right: 4px solid #6c5ce7; }
+        .category-other { border-right: 4px solid #a0a0a0; }
+
+        /* نافذة التأكيد */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        /* رسائل التنبيه */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.error {
+            background: #dc3545;
+        }
+
+        /* تحسينات الاستجابة */
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                height: auto;
+            }
+            
+            .recording-section,
+            .notes-section {
+                padding: 20px;
+            }
+            
+            .app-title {
+                font-size: 1.5rem;
+            }
+            
+            .record-btn {
+                width: 100px;
+                height: 100px;
+                font-size: 1.5rem;
+            }
+            
+            .control-buttons {
+                flex-direction: column;
+            }
+            
+            .search-filter {
+                flex-direction: column;
+            }
+            
+            .search-input,
+            .filter-select {
+                min-width: auto;
+                width: 100%;
+            }
+        }
+
+        /* رسوم متحركة */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* أزرار التصدير */
+        .export-controls {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-export {
+            background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+            color: white;
+            font-size: 0.9rem;
+            padding: 10px 15px;
+        }
+
+        /* مؤشر فارغ */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .empty-message {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .empty-submessage {
+            font-size: 1rem;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- قسم التسجيل -->
+        <div class="recording-section">
+            <div class="app-header">
+                <h1 class="app-title">
+                    <i class="fas fa-microphone"></i>
+                    تطبيق الملاحظات الصوتية المتقدم
+                </h1>
+            </div>
+            
+            <div id="status" class="status ready">
+                جاهز للتسجيل - اضغط على الزر للبدء
+            </div>
+            
+            <div class="record-controls">
+                <div id="timer" class="timer">00:00</div>
+                <button id="recordBtn" class="record-btn">
+                    <i class="fas fa-microphone"></i>
+                </button>
+            </div>
+            
+            <div class="result-area">
+                <div id="resultText" class="result-text">
+                    النص المسجل سيظهر هنا...
+                </div>
+            </div>
+            
+            <div class="save-controls">
+                <div class="category-input">
+                    <select id="categorySelect" class="category-select">
+                        <option value="">اختر التصنيف</option>
+                        <option value="work">عمل</option>
+                        <option value="personal">شخصي</option>
+                        <option value="study">دراسة</option>
+                        <option value="ideas">أفكار</option>
+                        <option value="meetings">اجتماعات</option>
+                        <option value="other">أخرى</option>
+                        <option value="new">إضافة تصنيف جديد...</option>
+                    </select>
+                    <input type="text" id="newCategoryInput" class="new-category-input" placeholder="اسم التصنيف الجديد">
+                </div>
+                
+                <div class="control-buttons">
+                    <button id="clearBtn" class="btn btn-secondary">
+                        <i class="fas fa-eraser"></i>
+                        مسح النص
+                    </button>
+                    <button id="saveBtn" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        حفظ الملاحظة
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- قسم الملاحظات -->
+        <div class="notes-section">
+            <div class="notes-header">
+                <h2 class="notes-title">
+                    <i class="fas fa-sticky-note"></i>
+                    الملاحظات المحفوظة
+                </h2>
+                <div id="notesStats" class="notes-stats">
+                    العدد: 0
+                </div>
+            </div>
+            
+            <div class="search-filter">
+                <input type="text" id="searchInput" class="search-input" placeholder="البحث في الملاحظات...">
+                <select id="filterCategory" class="filter-select">
+                    <option value="">جميع التصنيفات</option>
+                </select>
+                <select id="sortBy" class="filter-select">
+                    <option value="date-desc">الأحدث أولاً</option>
+                    <option value="date-asc">الأقدم أولاً</option>
+                    <option value="category">حسب التصنيف</option>
+                </select>
+            </div>
+            
+            <div id="notesList" class="notes-list">
+                <!-- الملاحظات ستظهر هنا -->
+            </div>
+
+            <div class="export-controls">
+                <button id="exportTxt" class="btn btn-export">
+                    <i class="fas fa-file-text"></i>
+                    تصدير TXT
+                </button>
+                <button id="exportJson" class="btn btn-export">
+                    <i class="fas fa-file-code"></i>
+                    تصدير JSON
+                </button>
+                <button id="clearAllBtn" class="btn btn-warning">
+                    <i class="fas fa-trash-alt"></i>
+                    حذف الكل
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة التأكيد -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h3 id="confirmTitle">تأكيد الحذف</h3>
+            <p id="confirmMessage">هل أنت متأكد من حذف هذه الملاحظة؟</p>
+            <div class="modal-buttons">
+                <button id="confirmYes" class="btn btn-warning">نعم</button>
+                <button id="confirmNo" class="btn btn-secondary">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AdvancedSpeechNotesApp {
+            constructor() {
+                this.recognition = null;
+                this.isRecording = false;
+                this.startTime = null;
+                this.timerInterval = null;
+                this.savedNotes = JSON.parse(localStorage.getItem('speechNotes') || '[]');
+                this.categories = JSON.parse(localStorage.getItem('noteCategories') || '["work", "personal", "study", "ideas", "meetings", "other"]');
+                this.editingNoteId = null;
+                
+                this.initElements();
+                this.initSpeechRecognition();
+                this.initEventListeners();
+                this.updateCategorySelects();
+                this.displayNotes();
+                this.updateStats();
+            }
+            
+            initElements() {
+                // عناصر التسجيل
+                this.statusEl = document.getElementById('status');
+                this.timerEl = document.getElementById('timer');
+                this.recordBtn = document.getElementById('recordBtn');
+                this.resultText = document.getElementById('resultText');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.saveBtn = document.getElementById('saveBtn');
+                this.categorySelect = document.getElementById('categorySelect');
+                this.newCategoryInput = document.getElementById('newCategoryInput');
+                
+                // عناصر الملاحظات
+                this.notesStats = document.getElementById('notesStats');
+                this.searchInput = document.getElementById('searchInput');
+                this.filterCategory = document.getElementById('filterCategory');
+                this.sortBy = document.getElementById('sortBy');
+                this.notesList = document.getElementById('notesList');
+                
+                // عناصر التصدير والحذف
+                this.exportTxt = document.getElementById('exportTxt');
+                this.exportJson = document.getElementById('exportJson');
+                this.clearAllBtn = document.getElementById('clearAllBtn');
+                
+                // نافذة التأكيد
+                this.confirmModal = document.getElementById('confirmModal');
+                this.confirmTitle = document.getElementById('confirmTitle');
+                this.confirmMessage = document.getElementById('confirmMessage');
+                this.confirmYes = document.getElementById('confirmYes');
+                this.confirmNo = document.getElementById('confirmNo');
+            }
+            
+            initEventListeners() {
+                // أحداث التسجيل
+                this.recordBtn.addEventListener('click', () => this.toggleRecording());
+                this.clearBtn.addEventListener('click', () => this.clearText());
+                this.saveBtn.addEventListener('click', () => this.saveNote());
+                
+                // أحداث التصنيف
+                this.categorySelect.addEventListener('change', () => this.handleCategoryChange());
+                
+                // أحداث البحث والتصفية
+                this.searchInput.addEventListener('input', () => this.displayNotes());
+                this.filterCategory.addEventListener('change', () => this.displayNotes());
+                this.sortBy.addEventListener('change', () => this.displayNotes());
+                
+                // أحداث التصدير والحذف
+                this.exportTxt.addEventListener('click', () => this.exportNotes('txt'));
+                this.exportJson.addEventListener('click', () => this.exportNotes('json'));
+                this.clearAllBtn.addEventListener('click', () => this.confirmClearAll());
+                
+                // أحداث نافذة التأكيد
+                this.confirmNo.addEventListener('click', () => this.hideConfirmModal());
+                
+                // إغلاق النافذة عند النقر خارجها
+                this.confirmModal.addEventListener('click', (e) => {
+                    if (e.target === this.confirmModal) {
+                        this.hideConfirmModal();
+                    }
+                });
+            }
+            
+            initSpeechRecognition() {
+                try {
+                    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                        this.showError('المتصفح لا يدعم التعرف على الصوت. يرجى استخدام Chrome أو Edge');
+                        return;
+                    }
+                    
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    this.recognition = new SpeechRecognition();
+                    
+                    this.recognition.continuous = true;
+                    this.recognition.interimResults = true;
+                    this.recognition.lang = 'ar-SA';
+                    
+                    this.recognition.onstart = () => {
+                        this.isRecording = true;
+                        this.updateStatus('جاري التسجيل... اتحدث الآن', 'recording');
+                        this.startTimer();
+                        this.recordBtn.innerHTML = '<i class="fas fa-stop"></i>';
+                        this.recordBtn.classList.add('recording');
+                    };
+                    
+                    this.recognition.onresult = (event) => {
+                        let finalTranscript = '';
+                        let interimTranscript = '';
+                        
+                        for (let i = event.resultIndex; i < event.results.length; i++) {
+                            const transcript = event.results[i][0].transcript;
+                            if (event.results[i].isFinal) {
+                                finalTranscript += transcript + ' ';
+                            } else {
+                                interimTranscript += transcript;
+                            }
+                        }
+                        
+                        const currentText = this.resultText.textContent;
+                        if (currentText === 'النص المسجل سيظهر هنا...') {
+                            this.resultText.textContent = finalTranscript + interimTranscript;
+                        } else {
+                            // إزالة النص المؤقت السابق وإضافة الجديد
+                            const baseText = currentText.replace(/\s*$/, ''); // إزالة المسافات الأخيرة
+                            this.resultText.textContent = baseText + finalTranscript + interimTranscript;
+                        }
+                    };
+                    
+                    this.recognition.onerror = (event) => {
+                        console.error('خطأ في التسجيل:', event.error);
+                        this.showError(`خطأ في التسجيل: ${this.getErrorMessage(event.error)}`);
+                        this.stopRecording();
+                    };
+                    
+                    this.recognition.onend = () => {
+                        this.stopRecording();
+                    };
+                    
+                    this.updateStatus('جاهز للتسجيل - اضغط على الزر للبدء', 'ready');
+                    
+                } catch (error) {
+                    console.error('خطأ في إعداد التعرف على الصوت:', error);
+                    this.showError('خطأ في إعداد التعرف على الصوت');
+                }
+            }
+            
+            getErrorMessage(error) {
+                const errorMessages = {
+                    'network': 'خطأ في الاتصال بالإنترنت',
+                    'not-allowed': 'تم رفض الإذن للوصول للميكروفون',
+                    'no-speech': 'لم يتم اكتشاف صوت',
+                    'aborted': 'تم إلغاء التسجيل',
+                    'audio-capture': 'خطأ في التقاط الصوت',
+                    'service-not-allowed': 'الخدمة غير متاحة'
+                };
+                return errorMessages[error] || error;
+            }
+            
+            toggleRecording() {
+                if (!this.recognition) {
+                    this.showError('التعرف على الصوت غير متاح');
+                    return;
+                }
+                
+                if (this.isRecording) {
+                    this.recognition.stop();
+                } else {
+                    try {
+                        this.recognition.start();
+                    } catch (error) {
+                        console.error('خطأ في بدء التسجيل:', error);
+                        this.showError('خطأ في بدء التسجيل. تأكد من إعطاء الإذن للميكروفون');
+                    }
+                }
+            }
+            
+            stopRecording() {
+                this.isRecording = false;
+                this.updateStatus('تم إيقاف التسجيل. يمكنك البدء مرة أخرى', 'ready');
+                this.stopTimer();
+                this.recordBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                this.recordBtn.classList.remove('recording');
+            }
+            
+            startTimer() {
+                this.startTime = Date.now();
+                this.timerEl.style.display = 'block';
+                this.timerInterval = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+                    this.timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+            }
+            
+            stopTimer() {
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                    this.timerInterval = null;
+                }
+                this.timerEl.style.display = 'none';
+            }
+            
+            updateStatus(message, type) {
+                this.statusEl.textContent = message;
+                this.statusEl.className = `status ${type}`;
+            }
+            
+            showError(message) {
+                this.updateStatus(`❌ ${message}`, 'ready');
+                this.showToast(message, 'error');
+            }
+            
+            clearText() {
+                this.resultText.textContent = 'النص المسجل سيظهر هنا...';
+                this.updateStatus('تم مسح النص', 'ready');
+            }
+            
+            handleCategoryChange() {
+                const value = this.categorySelect.value;
+                if (value === 'new') {
+                    this.newCategoryInput.style.display = 'block';
+                    this.newCategoryInput.focus();
+                } else {
+                    this.newCategoryInput.style.display = 'none';
+                }
+            }
+            
+            saveNote() {
+                const text = this.resultText.textContent.trim();
+                if (!text || text === 'النص المسجل سيظهر هنا...') {
+                    this.showToast('لا يوجد نص للحفظ', 'error');
+                    return;
+                }
+                
+                let category = this.categorySelect.value;
+                
+                // التعامل مع التصنيف الجديد
+                if (category === 'new') {
+                    const newCategory = this.newCategoryInput.value.trim();
+                    if (!newCategory) {
+                        this.showToast('يرجى إدخال اسم التصنيف', 'error');
+                        return;
+                    }
+                    category = newCategory.toLowerCase();
+                    if (!this.categories.includes(category)) {
+                        this.categories.push(category);
+                        localStorage.setItem('noteCategories', JSON.stringify(this.categories));
+                        this.updateCategorySelects();
+                    }
+                }
+                
+                if (!category) {
+                    category = 'other';
+                }
+                
+                const note = {
+                    id: Date.now() + Math.random(),
+                    text: text,
+                    category: category,
+                    date: new Date().toLocaleString('ar-SA'),
+                    timestamp: Date.now()
+                };
+                
+                this.savedNotes.unshift(note);
+                localStorage.setItem('speechNotes', JSON.stringify(this.savedNotes));
+                
+                this.displayNotes();
+                this.updateStats();
+                this.clearText();
+                this.categorySelect.value = '';
+                this.newCategoryInput.value = '';
+                this.newCategoryInput.style.display = 'none';
+                
+                this.showToast('تم حفظ الملاحظة بنجاح!');
+                this.updateStatus('تم حفظ الملاحظة بنجاح!', 'ready');
+            }
+            
+            updateCategorySelects() {
+                // تحديث قائمة اختيار التصنيف في قسم الحفظ
+                const saveOptions = this.categorySelect.innerHTML.split('<option value="new">')[0];
+                this.categorySelect.innerHTML = saveOptions + '<option value="new">إضافة تصنيف جديد...</option>';
+                
+                // تحديث قائمة التصفية
+                this.filterCategory.innerHTML = '<option value="">جميع التصنيفات</option>';
+                
+                const uniqueCategories = [...new Set(this.savedNotes.map(note => note.category))];
+                uniqueCategories.forEach(category => {
+                    if (category) {
+                        const option = document.createElement('option');
+                        option.value = category;
+                        option.textContent = this.getCategoryDisplayName(category);
+                        this.filterCategory.appendChild(option);
+                    }
+                });
+            }
+            
+            getCategoryDisplayName(category) {
+                const categoryNames = {
+                    'work': 'عمل',
+                    'personal': 'شخصي',
+                    'study': 'دراسة',
+                    'ideas': 'أفكار',
+                    'meetings': 'اجتماعات',
+                    'other': 'أخرى'
+                };
+                return categoryNames[category] || category;
+            }
+            
+            displayNotes() {
+                const searchTerm = this.searchInput.value.toLowerCase();
+                const categoryFilter = this.filterCategory.value;
+                const sortBy = this.sortBy.value;
+                
+                let filteredNotes = this.savedNotes.filter(note => {
+                    const matchesSearch = note.text.toLowerCase().includes(searchTerm);
+                    const matchesCategory = !categoryFilter || note.category === categoryFilter;
+                    return matchesSearch && matchesCategory;
+                });
+                
+                // ترتيب الملاحظات
+                filteredNotes.sort((a, b) => {
+                    switch (sortBy) {
+                        case 'date-asc':
+                            return a.timestamp - b.timestamp;
+                        case 'category':
+                            return a.category.localeCompare(b.category);
+                        case 'date-desc':
+                        default:
+                            return b.timestamp - a.timestamp;
+                    }
+                });
+                
+                if (filteredNotes.length === 0) {
+                    this.notesList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon"><i class="fas fa-sticky-note"></i></div>
+                            <div class="empty-message">لا توجد ملاحظات</div>
+                            <div class="empty-submessage">${searchTerm || categoryFilter ? 'جرب تغيير معايير البحث' : 'ابدأ بتسجيل ملاحظة جديدة'}</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const notesHtml = filteredNotes.map(note => `
+                    <div class="note-item category-${note.category} fade-in" data-id="${note.id}">
+                        <div class="note-header">
+                            <div class="note-meta">
+                                <div class="note-date">
+                                    <i class="fas fa-calendar"></i> ${note.date}
+                                </div>
+                                <span class="note-category">${this.getCategoryDisplayName(note.category)}</span>
+                            </div>
+                            <div class="note-actions">
+                                <button class="note-btn copy" onclick="app.copyNote('${note.id}')" title="نسخ">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="note-btn edit" onclick="app.editNote('${note.id}')" title="تعديل">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="note-btn delete" onclick="app.confirmDeleteNote('${note.id}')" title="حذف">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="note-content" id="content-${note.id}">${note.text}</div>
+                    </div>
+                `).join('');
+                
+                this.notesList.innerHTML = notesHtml;
+                this.updateCategorySelects();
+            }
+            
+            editNote(noteId) {
+                const note = this.savedNotes.find(n => n.id == noteId);
+                if (!note) return;
+                
+                const contentEl = document.getElementById(`content-${noteId}`);
+                if (this.editingNoteId === noteId) {
+                    // حفظ التعديل
+                    const newText = contentEl.value.trim();
+                    if (newText) {
+                        note.text = newText;
+                        note.date = new Date().toLocaleString('ar-SA') + ' (معدّل)';
+                        localStorage.setItem('speechNotes', JSON.stringify(this.savedNotes));
+                        this.showToast('تم تحديث الملاحظة');
+                    }
+                    this.editingNoteId = null;
+                    this.displayNotes();
+                } else {
+                    // بدء التعديل
+                    this.editingNoteId = noteId;
+                    contentEl.outerHTML = `<textarea class="note-content editing" id="content-${noteId}">${note.text}</textarea>`;
+                    document.getElementById(`content-${noteId}`).focus();
+                }
+            }
+            
+            copyNote(noteId) {
+                const note = this.savedNotes.find(n => n.id == noteId);
+                if (!note) return;
+                
+                navigator.clipboard.writeText(note.text).then(() => {
+                    this.showToast('تم نسخ النص');
+                }).catch(() => {
+                    this.showToast('فشل في نسخ النص', 'error');
+                });
+            }
+            
+            confirmDeleteNote(noteId) {
+                this.confirmTitle.textContent = 'تأكيد الحذف';
+                this.confirmMessage.textContent = 'هل أنت متأكد من حذف هذه الملاحظة؟ لا يمكن التراجع عن هذا الإجراء.';
+                this.confirmYes.onclick = () => this.deleteNote(noteId);
+                this.showConfirmModal();
+            }
+            
+            deleteNote(noteId) {
+                this.savedNotes = this.savedNotes.filter(note => note.id != noteId);
+                localStorage.setItem('speechNotes', JSON.stringify(this.savedNotes));
+                this.displayNotes();
+                this.updateStats();
+                this.hideConfirmModal();
+                this.showToast('تم حذف الملاحظة');
+            }
+            
+            confirmClearAll() {
+                if (this.savedNotes.length === 0) {
+                    this.showToast('لا توجد ملاحظات للحذف', 'error');
+                    return;
+                }
+                
+                this.confirmTitle.textContent = 'حذف جميع الملاحظات';
+                this.confirmMessage.textContent = `هل أنت متأكد من حذف جميع الملاحظات (${this.savedNotes.length} ملاحظة)؟ لا يمكن التراجع عن هذا الإجراء.`;
+                this.confirmYes.onclick = () => this.clearAllNotes();
+                this.showConfirmModal();
+            }
+            
+            clearAllNotes() {
+                this.savedNotes = [];
+                localStorage.setItem('speechNotes', JSON.stringify(this.savedNotes));
+                this.displayNotes();
+                this.updateStats();
+                this.hideConfirmModal();
+                this.showToast('تم حذف جميع الملاحظات');
+            }
+            
+            exportNotes(format) {
+                if (this.savedNotes.length === 0) {
+                    this.showToast('لا توجد ملاحظات للتصدير', 'error');
+                    return;
+                }
+                
+                const date = new Date().toISOString().split('T')[0];
+                
+                if (format === 'txt') {
+                    const content = this.savedNotes.map(note => 
+                        `التاريخ: ${note.date}\nالتصنيف: ${this.getCategoryDisplayName(note.category)}\nالنص: ${note.text}\n${'='.repeat(50)}\n`
+                    ).join('\n');
+                    
+                    this.downloadFile(content, `notes-${date}.txt`, 'text/plain');
+                } else if (format === 'json') {
+                    const content = JSON.stringify(this.savedNotes, null, 2);
+                    this.downloadFile(content, `notes-${date}.json`, 'application/json');
+                }
+                
+                this.showToast(`تم تصدير ${this.savedNotes.length} ملاحظة`);
+            }
+            
+            downloadFile(content, filename, mimeType) {
+                const blob = new Blob([content], { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+            
+            updateStats() {
+                this.notesStats.textContent = `العدد: ${this.savedNotes.length}`;
+            }
+            
+            showConfirmModal() {
+                this.confirmModal.style.display = 'block';
+            }
+            
+            hideConfirmModal() {
+                this.confirmModal.style.display = 'none';
+            }
+            
+            showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'check-circle'}"></i> ${message}`;
+                
+                document.body.appendChild(toast);
+                
+                setTimeout(() => toast.classList.add('show'), 100);
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => document.body.removeChild(toast), 300);
+                }, 3000);
+            }
+        }
+        
+        // تشغيل التطبيق
+        let app;
+        document.addEventListener('DOMContentLoaded', () => {
+            app = new AdvancedSpeechNotesApp();
+        });
+    </script>
+</body>
+</html>

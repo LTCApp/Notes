@@ -1,0 +1,255 @@
+/* ملف CSS إضافي للتحسينات المتقدمة */
+
+/* تأثيرات الحركة المتقدمة */
+@keyframes slideInFromRight {
+    from {
+        transform: translateX(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes shakeError {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-5px);
+    }
+    20%, 40%, 60%, 80% {
+        transform: translateX(5px);
+    }
+}
+
+/* تحسينات الواجهة للوضع الليلي */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    }
+    
+    .recording-section,
+    .notes-section {
+        background: #2c3e50;
+        color: #ecf0f1;
+    }
+    
+    .result-area {
+        background: #34495e;
+        border-color: #4a5f7a;
+    }
+    
+    .note-item {
+        background: #34495e;
+        border-color: #4a5f7a;
+        color: #ecf0f1;
+    }
+    
+    .search-input,
+    .filter-select,
+    .category-select {
+        background: #34495e;
+        color: #ecf0f1;
+        border-color: #4a5f7a;
+    }
+}
+
+/* تحسينات إضافية للأداء */
+.note-item {
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+.btn {
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+/* أنماط إضافية للتصنيفات */
+.category-work .note-category {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+}
+
+.category-personal .note-category {
+    background: linear-gradient(45deg, #4ecdc4, #44a08d);
+}
+
+.category-study .note-category {
+    background: linear-gradient(45deg, #45b7d1, #96c93d);
+}
+
+.category-ideas .note-category {
+    background: linear-gradient(45deg, #f9ca24, #f0932b);
+}
+
+.category-meetings .note-category {
+    background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+}
+
+.category-other .note-category {
+    background: linear-gradient(45deg, #636e72, #2d3436);
+}
+
+/* تحسينات للطباعة */
+@media print {
+    body {
+        background: white !important;
+    }
+    
+    .recording-section {
+        display: none !important;
+    }
+    
+    .notes-section {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+    
+    .note-actions {
+        display: none !important;
+    }
+    
+    .search-filter,
+    .export-controls {
+        display: none !important;
+    }
+}
+
+/* تحسينات لإمكانية الوصول */
+.btn:focus,
+.note-btn:focus {
+    outline: 3px solid #667eea;
+    outline-offset: 2px;
+}
+
+.search-input:focus,
+.filter-select:focus,
+.category-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* مؤشرات التحميل */
+.loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* تحسينات للشاشات الصغيرة جداً */
+@media (max-width: 480px) {
+    .main-container {
+        padding: 10px;
+        gap: 10px;
+    }
+    
+    .recording-section,
+    .notes-section {
+        padding: 15px;
+        border-radius: 15px;
+    }
+    
+    .app-title {
+        font-size: 1.2rem;
+    }
+    
+    .record-btn {
+        width: 80px;
+        height: 80px;
+        font-size: 1.2rem;
+    }
+    
+    .note-item {
+        padding: 15px;
+    }
+    
+    .note-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .note-actions {
+        justify-content: center;
+    }
+}
+
+/* تأثيرات التركيز المحسّنة */
+.record-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.3);
+}
+
+/* أنماط للحالات الخاصة */
+.note-item.editing {
+    border-color: #667eea;
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
+}
+
+.note-item.editing .note-content.editing {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    color: inherit;
+    text-align: right;
+}
+
+/* تحسينات الانتقالات */
+.note-item,
+.btn,
+.modal-content {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* تأثيرات المرور المتقدمة */
+.note-btn:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.note-btn.edit:hover {
+    color: #00a085;
+}
+
+.note-btn.delete:hover {
+    color: #d63031;
+}
+
+.note-btn.copy:hover {
+    color: #0984e3;
+}
